@@ -1,3 +1,5 @@
+//go:build !windows && !openbsd
+
 package main
 
 import (
