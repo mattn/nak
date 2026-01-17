@@ -43,10 +43,18 @@ jobs:
         if: matrix.goarch == 'riscv64' && matrix.goos == 'linux'
         run: |
           sudo apt-get install -y gcc-riscv64-linux-gnu
-      - name: Install FreeBSD build tools
+      - name: Install FreeBSD SDK
         if: matrix.goos == 'freebsd'
         run: |
-          sudo apt-get install -y freebsd-buildutils
+          mkdir -p /tmp/freebsd-sdk
+          cd /tmp/freebsd-sdk
+          wget https://download.freebsd.org/releases/amd64/13.2-RELEASE/base.txz -nv
+          tar -xf base.txz -C /tmp/freebsd-sdk
+      - name: Set FreeBSD compiler
+        if: matrix.goos == 'freebsd'
+        run: |
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CFLAGS=-isystem /tmp/freebsd-sdk/usr/include" >> $GITHUB_ENV
       - name: Set cross-compiler
         id: set-cc
         run: |
