@@ -38,12 +38,16 @@ jobs:
         if: matrix.goarch == 'riscv64'
         run: |
           sudo apt-get install -y gcc-riscv64-linux-gnu
+      - name: Install cross-compilation tools for FreeBSD
+        if: matrix.goos == 'freebsd'
+        run: |
+          sudo apt-get install -y clang
       - name: Build binary
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: ${{ matrix.goos == 'windows' && '0' || '1' }}
-          CC: ${{ matrix.goarch == 'riscv64' && 'riscv64-linux-gnu-gcc' || '' }}
+          CC: ${{ matrix.goarch == 'riscv64' && 'riscv64-linux-gnu-gcc' || (matrix.goos == 'freebsd' && 'clang' || '') }}
         run: |
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o nak-${{ github.ref_name }}-${{ matrix.goos }}-${{ matrix.goarch }}
       - name: Upload Release Asset
