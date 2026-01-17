@@ -54,6 +54,9 @@ jobs:
           wget https://download.freebsd.org/releases/amd64/14.3-RELEASE/lib32.txz -nv
           tar -xf base.txz
           tar -xf lib32.txz
+          # Extract fuse.h manually from FreeBSD source
+          wget https://cgit.freebsd.org/src/plain/sys/fs/fuse/fuse_kernel.h?h=releng/14.3 -O /tmp/freebsd-sdk/usr/include/fuse_kernel.h 2>/dev/null || true
+          wget https://cgit.freebsd.org/src/plain/sys/fs/fuse/fuse_ipc.h?h=releng/14.3 -O /tmp/freebsd-sdk/usr/include/fuse_ipc.h 2>/dev/null || true
       - name: Set cross-compiler
         id: set-cc
         run: |
