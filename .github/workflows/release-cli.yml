@@ -48,18 +48,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y clang lld
-          mkdir -p /tmp/freebsd-sdk
+          mkdir -p /tmp/freebsd-sdk/usr/include /tmp/freebsd-sdk/usr/lib
           cd /tmp/freebsd-sdk
           wget https://download.freebsd.org/releases/amd64/14.3-RELEASE/base.txz -nv
-          wget https://download.freebsd.org/releases/amd64/14.3-RELEASE/lib32.txz -nv
-          tar -xf base.txz
-          tar -xf lib32.txz
-      - name: Set FreeBSD compiler
-        if: matrix.goos == 'freebsd'
-        run: |
-          echo "CC=clang" >> $GITHUB_ENV
-          echo "LDFLAGS=-L/tmp/freebsd-sdk/usr/lib -L/tmp/freebsd-sdk/lib" >> $GITHUB_ENV
-          echo "CFLAGS=-isystem /tmp/freebsd-sdk/usr/include" >> $GITHUB_ENV
+          tar -xf base.txz -C /tmp/freebsd-sdk
       - name: Set cross-compiler
         id: set-cc
         run: |
@@ -67,6 +59,10 @@ jobs:
             echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
           elif [ "${{ matrix.goarch }}" = "riscv64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
             echo "CC=riscv64-linux-gnu-gcc" >> $GITHUB_ENV
+          elif [ "${{ matrix.goos }}" = "freebsd" ]; then
+            echo "CC=clang" >> $GITHUB_ENV
+            echo "CGO_CFLAGS=-isystem /tmp/freebsd-sdk/usr/include" >> $GITHUB_ENV
+            echo "CGO_LDFLAGS=-L/tmp/freebsd-sdk/usr/lib -L/tmp/freebsd-sdk/lib" >> $GITHUB_ENV
           fi
       - name: Build binary
         env:
