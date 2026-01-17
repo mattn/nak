@@ -14,6 +14,7 @@ jobs:
   build-all-for-all:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         goos: [linux, freebsd, windows]
         goarch: [amd64, arm64, riscv64]
@@ -34,14 +35,31 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libfuse-dev
+      - name: Install cross-compilation tools for ARM64
+        if: matrix.goarch == 'arm64' && matrix.goos == 'linux'
+        run: |
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+      - name: Install cross-compilation tools for RISC-V
+        if: matrix.goarch == 'riscv64' && matrix.goos == 'linux'
+        run: |
+          sudo apt-get install -y gcc-riscv64-linux-gnu
+      - name: Set cross-compiler
+        id: set-cc
+        run: |
+          if [ "${{ matrix.goarch }}" = "arm64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
+            echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          elif [ "${{ matrix.goarch }}" = "riscv64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
+            echo "CC=riscv64-linux-gnu-gcc" >> $GITHUB_ENV
+          fi
       - name: Build binary
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-          CGO_ENABLED: ${{ matrix.goos == 'windows' && '0' || '1' }}
+          CGO_ENABLED: ${{ (matrix.goos == 'windows' || matrix.goos == 'freebsd') && '0' || '1' }}
         run: |
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o nak-${{ github.ref_name }}-${{ matrix.goos }}-${{ matrix.goarch }}
       - name: Upload Release Asset
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: ./nak-${{ github.ref_name }}-${{ matrix.goos }}-${{ matrix.goarch }}
@@ -49,6 +67,7 @@ jobs:
   build-darwin:
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         goarch: [amd64, arm64]
     steps:
@@ -63,9 +82,11 @@ jobs:
         env:
           GOOS: darwin
           GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '1'
         run: |
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o nak-${{ github.ref_name }}-darwin-${{ matrix.goarch }}
       - name: Upload Release Asset
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: ./nak-${{ github.ref_name }}-darwin-${{ matrix.goarch }}
