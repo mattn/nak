@@ -36,6 +36,7 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+          # Disable CGO for Windows to enable cross-compilation (cgofuse has pure Go implementation)
           CGO_ENABLED: ${{ matrix.goos == 'windows' && '0' || '1' }}
         run: |
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o nak-${{ github.ref_name }}-${{ matrix.goos }}-${{ matrix.goarch }}
