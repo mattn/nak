@@ -25,8 +25,6 @@ jobs:
              goos: windows
            - goarch: arm64
              goos: freebsd
-           - goarch: riscv64
-             goos: freebsd
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
@@ -185,7 +183,7 @@ jobs:
           # test relay operations (with a public relay)
           echo "testing publishing..."
           # publish a simple event to a public relay
-          EVENT_JSON=$(./nak event --sec $SECRET_KEY -c "test from nak smoke test" nos.lol < /dev/null)
+          EVENT_JSON=$(./nak event -q --sec $SECRET_KEY -c "test from nak smoke test" nos.lol)
           EVENT_ID=$(echo $EVENT_JSON | jq -r .id)
           echo "published event ID: $EVENT_ID"
 
