@@ -48,7 +48,7 @@ jobs:
         run: |
           mkdir -p /tmp/freebsd-sdk
           cd /tmp/freebsd-sdk
-          wget https://download.freebsd.org/releases/amd64/13.2-RELEASE/base.txz -nv
+          wget https://download.freebsd.org/releases/amd64/15.0-RELEASE/base.txz -nv
           tar -xf base.txz -C /tmp/freebsd-sdk
       - name: Set FreeBSD compiler
         if: matrix.goos == 'freebsd'
