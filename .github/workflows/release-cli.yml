@@ -43,12 +43,15 @@ jobs:
         run: |
           if [ "${{ matrix.goarch }}" = "riscv64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
             echo "CC=riscv64-linux-gnu-gcc" >> $GITHUB_ENV
+          elif [ "${{ matrix.goos }}" = "freebsd" ]; then
+            echo "CC=clang" >> $GITHUB_ENV
+            echo "CGO_CFLAGS=-D__FreeBSD__=1" >> $GITHUB_ENV
           fi
       - name: Build binary
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-          CGO_ENABLED: ${{ (matrix.goos == 'windows' || matrix.goos == 'freebsd') && '0' || '1' }}
+          CGO_ENABLED: ${{ matrix.goos == 'windows' && '0' || '1' }}
         run: |
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o nak-${{ github.ref_name }}-${{ matrix.goos }}-${{ matrix.goarch }}
       - name: Upload Release Asset
