@@ -48,10 +48,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y clang lld
-          mkdir -p /tmp/freebsd-sdk/usr/include /tmp/freebsd-sdk/usr/lib
-          cd /tmp/freebsd-sdk
-          wget https://download.freebsd.org/releases/amd64/14.3-RELEASE/base.txz -nv
-          tar -xf base.txz -C /tmp/freebsd-sdk
+          # mkdir -p /tmp/freebsd-sdk/usr/include /tmp/freebsd-sdk/usr/lib
+          # cd /tmp/freebsd-sdk
+          # wget https://download.freebsd.org/releases/amd64/14.3-RELEASE/base.txz -nv
+          # tar -xf base.txz -C /tmp/freebsd-sdk
       - name: Set cross-compiler
         id: set-cc
         run: |
@@ -60,9 +60,15 @@ jobs:
           elif [ "${{ matrix.goarch }}" = "riscv64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
             echo "CC=riscv64-linux-gnu-gcc" >> $GITHUB_ENV
           elif [ "${{ matrix.goos }}" = "freebsd" ]; then
-            echo "CC=clang" >> $GITHUB_ENV
-            echo "CGO_CFLAGS=-isystem /tmp/freebsd-sdk/usr/include" >> $GITHUB_ENV
-            echo "CGO_LDFLAGS=-L/tmp/freebsd-sdk/usr/lib -L/tmp/freebsd-sdk/lib" >> $GITHUB_ENV
+            TARGET_TRIPLE="x86_64-unknown-freebsd"
+            if [ "${{ matrix.goarch }}" = "arm64" ]; then
+              TARGET_TRIPLE="aarch64-unknown-freebsd"
+            elif [ "${{ matrix.goarch }}" = "riscv64" ]; then
+              TARGET_TRIPLE="riscv64-unknown-freebsd"
+            fi
+            echo "CC=clang --target=$TARGET_TRIPLE" >> $GITHUB_ENV
+            echo "CGO_CFLAGS=--target=$TARGET_TRIPLE" >> $GITHUB_ENV
+            echo "CGO_LDFLAGS=--target=$TARGET_TRIPLE" >> $GITHUB_ENV
           fi
       - name: Build binary
         env:
