@@ -51,6 +51,14 @@ jobs:
           mkdir -p /tmp/freebsd-sdk
           cd /tmp/freebsd-sdk
           wget -q https://download.freebsd.org/releases/amd64/14.3-RELEASE/base.txz && tar -xf base.txz
+          # Download and extract libfuse source
+          mkdir -p libfuse && cd libfuse
+          wget -q https://github.com/libfuse/libfuse/releases/download/fuse-2.9.9/fuse-2.9.9.tar.gz
+          tar -xzf fuse-2.9.9.tar.gz --strip-components=1
+          mkdir -p /tmp/freebsd-sdk/usr/include
+          cp include/fuse.h /tmp/freebsd-sdk/usr/include/
+          cp include/fuse_*.h /tmp/freebsd-sdk/usr/include/ 2>/dev/null || true
+          cd /tmp/freebsd-sdk
       - name: Set cross-compiler
         id: set-cc
         run: |
