@@ -48,10 +48,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y clang lld
-          # mkdir -p /tmp/freebsd-sdk/usr/include /tmp/freebsd-sdk/usr/lib
-          # cd /tmp/freebsd-sdk
-          # wget https://download.freebsd.org/releases/amd64/14.3-RELEASE/base.txz -nv
-          # tar -xf base.txz -C /tmp/freebsd-sdk
+          mkdir -p /tmp/freebsd-sdk
+          cd /tmp/freebsd-sdk
+          wget https://download.freebsd.org/releases/amd64/14.3-RELEASE/base.txz -nv
+          tar -xf base.txz
       - name: Set cross-compiler
         id: set-cc
         run: |
@@ -66,9 +66,9 @@ jobs:
             elif [ "${{ matrix.goarch }}" = "riscv64" ]; then
               TARGET_TRIPLE="riscv64-unknown-freebsd"
             fi
-            echo "CC=clang --target=$TARGET_TRIPLE" >> $GITHUB_ENV
-            echo "CGO_CFLAGS=--target=$TARGET_TRIPLE" >> $GITHUB_ENV
-            echo "CGO_LDFLAGS=--target=$TARGET_TRIPLE" >> $GITHUB_ENV
+            echo "CC=clang --target=$TARGET_TRIPLE --sysroot=/tmp/freebsd-sdk" >> $GITHUB_ENV
+            echo "CGO_CFLAGS=--target=$TARGET_TRIPLE --sysroot=/tmp/freebsd-sdk" >> $GITHUB_ENV
+            echo "CGO_LDFLAGS=--target=$TARGET_TRIPLE --sysroot=/tmp/freebsd-sdk" >> $GITHUB_ENV
           fi
       - name: Build binary
         env:
