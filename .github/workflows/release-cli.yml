@@ -47,7 +47,7 @@ jobs:
         if: matrix.goos == 'freebsd'
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang lld
+          sudo apt-get install -y clang lld binutils-riscv64-unknown-elf 2>/dev/null || true
           mkdir -p /tmp/freebsd-sdk
           cd /tmp/freebsd-sdk
           # Determine download path based on architecture
