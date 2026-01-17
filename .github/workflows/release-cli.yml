@@ -34,11 +34,16 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libfuse-dev
+      - name: Install cross-compilation tools for RISC-V
+        if: matrix.goarch == 'riscv64'
+        run: |
+          sudo apt-get install -y gcc-riscv64-linux-gnu
       - name: Build binary
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: ${{ matrix.goos == 'windows' && '0' || '1' }}
+          CC: ${{ matrix.goarch == 'riscv64' && 'riscv64-linux-gnu-gcc' || '' }}
         run: |
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o nak-${{ github.ref_name }}-${{ matrix.goos }}-${{ matrix.goarch }}
       - name: Upload Release Asset
