@@ -43,20 +43,14 @@ jobs:
         if: matrix.goarch == 'riscv64' && matrix.goos == 'linux'
         run: |
           sudo apt-get install -y gcc-riscv64-linux-gnu
-      - name: Install FreeBSD cross-compilation environment
+      - name: Install FreeBSD SDK
         if: matrix.goos == 'freebsd'
         run: |
           sudo apt-get update
           sudo apt-get install -y clang lld
           mkdir -p /tmp/freebsd-sdk
           cd /tmp/freebsd-sdk
-          wget https://download.freebsd.org/releases/amd64/14.3-RELEASE/base.txz -nv
-          wget https://download.freebsd.org/releases/amd64/14.3-RELEASE/lib32.txz -nv
-          tar -xf base.txz
-          tar -xf lib32.txz
-          # Extract fuse.h manually from FreeBSD source
-          wget https://cgit.freebsd.org/src/plain/sys/fs/fuse/fuse_kernel.h?h=releng/14.3 -O /tmp/freebsd-sdk/usr/include/fuse_kernel.h 2>/dev/null || true
-          wget https://cgit.freebsd.org/src/plain/sys/fs/fuse/fuse_ipc.h?h=releng/14.3 -O /tmp/freebsd-sdk/usr/include/fuse_ipc.h 2>/dev/null || true
+          wget -q https://download.freebsd.org/releases/amd64/14.3-RELEASE/base.txz && tar -xf base.txz
       - name: Set cross-compiler
         id: set-cc
         run: |
@@ -65,15 +59,12 @@ jobs:
           elif [ "${{ matrix.goarch }}" = "riscv64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
             echo "CC=riscv64-linux-gnu-gcc" >> $GITHUB_ENV
           elif [ "${{ matrix.goos }}" = "freebsd" ]; then
-            TARGET_TRIPLE="x86_64-unknown-freebsd"
-            if [ "${{ matrix.goarch }}" = "arm64" ]; then
-              TARGET_TRIPLE="aarch64-unknown-freebsd"
-            elif [ "${{ matrix.goarch }}" = "riscv64" ]; then
-              TARGET_TRIPLE="riscv64-unknown-freebsd"
-            fi
-            echo "CC=clang --target=$TARGET_TRIPLE --sysroot=/tmp/freebsd-sdk" >> $GITHUB_ENV
-            echo "CGO_CFLAGS=--target=$TARGET_TRIPLE --sysroot=/tmp/freebsd-sdk" >> $GITHUB_ENV
-            echo "CGO_LDFLAGS=--target=$TARGET_TRIPLE --sysroot=/tmp/freebsd-sdk" >> $GITHUB_ENV
+            TRIPLE="x86_64-unknown-freebsd14.3"
+            [ "${{ matrix.goarch }}" = "arm64" ] && TRIPLE="aarch64-unknown-freebsd14.3"
+            [ "${{ matrix.goarch }}" = "riscv64" ] && TRIPLE="riscv64-unknown-freebsd14.3"
+            echo "CC=clang --target=$TRIPLE --sysroot=/tmp/freebsd-sdk" >> $GITHUB_ENV
+            echo "CGO_CFLAGS=-isystem /tmp/freebsd-sdk/usr/include --target=$TRIPLE" >> $GITHUB_ENV
+            echo "CGO_LDFLAGS=-L/tmp/freebsd-sdk/usr/lib -L/tmp/freebsd-sdk/lib --target=$TRIPLE" >> $GITHUB_ENV
           fi
       - name: Build binary
         env:
