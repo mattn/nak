@@ -50,8 +50,13 @@ jobs:
           sudo apt-get install -y clang lld
           mkdir -p /tmp/freebsd-sdk
           cd /tmp/freebsd-sdk
-          ARCH=$([ "${{ matrix.goarch }}" = "arm64" ] && echo "aarch64" || echo "${{ matrix.goarch }}")
-          wget -q "https://download.freebsd.org/releases/${ARCH}/$([ "${{ matrix.goarch }}" = "arm64" ] && echo "aarch64" || echo "${{ matrix.goarch }}")/14.3-RELEASE/base.txz" && tar -xf base.txz
+          # Determine download path based on architecture
+          case "${{ matrix.goarch }}" in
+            arm64) DLPATH="arm64" ;;
+            riscv64) DLPATH="riscv" ;;
+            *) DLPATH="amd64" ;;
+          esac
+          wget -q "https://download.freebsd.org/releases/${DLPATH}/14.3-RELEASE/base.txz" && tar -xf base.txz
           # Download and extract libfuse source
           mkdir -p libfuse && cd libfuse
           wget -q https://github.com/libfuse/libfuse/releases/download/fuse-2.9.9/fuse-2.9.9.tar.gz
