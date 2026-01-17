@@ -38,7 +38,7 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-          CGO_ENABLED: ${{ (matrix.goos == 'windows' || matrix.goarch == 'riscv64') && '0' || '1' }}
+          CGO_ENABLED: ${{ matrix.goos == 'windows' && '0' || '1' }}
         run: |
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o nak-${{ github.ref_name }}-${{ matrix.goos }}-${{ matrix.goarch }}
       - name: Upload Release Asset
@@ -57,11 +57,12 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: 'stable'
+      - name: Install macFUSE
+        run: brew install --cask macfuse
       - name: Build binary
         env:
           GOOS: darwin
           GOARCH: ${{ matrix.goarch }}
-          CGO_ENABLED: '0'
         run: |
           go build -ldflags "-X main.version=${{ github.ref_name }}" -o nak-${{ github.ref_name }}-darwin-${{ matrix.goarch }}
       - name: Upload Release Asset

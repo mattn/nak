@@ -1,4 +1,4 @@
-//go:build !windows && !openbsd && !darwin && !riscv64
+//go:build !windows && !openbsd
 
 package main
 
