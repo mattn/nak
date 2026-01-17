@@ -35,6 +35,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libfuse-dev
+      - name: Install cross-compilation tools for ARM64
+        if: matrix.goarch == 'arm64' && matrix.goos == 'linux'
+        run: |
+          sudo apt-get install -y gcc-aarch64-linux-gnu
       - name: Install cross-compilation tools for RISC-V
         if: matrix.goarch == 'riscv64' && matrix.goos == 'linux'
         run: |
@@ -42,7 +46,9 @@ jobs:
       - name: Set cross-compiler
         id: set-cc
         run: |
-          if [ "${{ matrix.goarch }}" = "riscv64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
+          if [ "${{ matrix.goarch }}" = "arm64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
+            echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          elif [ "${{ matrix.goarch }}" = "riscv64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
             echo "CC=riscv64-linux-gnu-gcc" >> $GITHUB_ENV
           fi
       - name: Build binary
