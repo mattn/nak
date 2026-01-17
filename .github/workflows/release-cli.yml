@@ -185,7 +185,7 @@ jobs:
           # test relay operations (with a public relay)
           echo "testing publishing..."
           # publish a simple event to a public relay
-          EVENT_JSON=$(./nak event --sec $SECRET_KEY -c "test from nak smoke test" nos.lol)
+          EVENT_JSON=$(./nak event --sec $SECRET_KEY -c "test from nak smoke test" nos.lol < /dev/null)
           EVENT_ID=$(echo $EVENT_JSON | jq -r .id)
           echo "published event ID: $EVENT_ID"
 
